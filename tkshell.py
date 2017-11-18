@@ -20,10 +20,12 @@ class TKSehllApplication(tk.Tk):
         #类的构造方法必须调用其父类的构造方法来进行基本的初始化。
         super().__init__() # 有点相当于tk.Tk()
         self.createWidgets()
+        sessioncachlist = []
+        print("TKSehllApplication = %r %s" %(self, id(self)))
 
     def createWidgets(self):
         self.title(self.name + 'TKShell (free for everyone)')
-        self.geometry('600x400')
+        self.geometry('683x400')
 
         #self.menubar创建菜单栏
         self.menubar = tk.Menu(self)
@@ -125,12 +127,12 @@ class TKSehllApplication(tk.Tk):
         self.menubar.add_cascade(label='工具(Tools)', menu=toolsmenu)
 
         #5\Bookpage
-        bookpagemenu = tk.Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label='标签页(Bookpage)', menu=bookpagemenu)
+        tabmenu = tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label='标签页(Tab)', menu=tabmenu)
 
         #6\Windows
-        windowsmenu = tk.Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label='窗口(Windows)', menu=windowsmenu)
+        windowmenu = tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label='窗口(Window)', menu=windowmenu)
 
         #6\Help
         helpmenu = tk.Menu(self.menubar, tearoff=0)
@@ -143,15 +145,34 @@ class TKSehllApplication(tk.Tk):
         helpmenu.add_command(label='Checking Update', command=self._do_job)
         helpmenu.add_separator()#line
         helpmenu.add_command(label='About TKShell', command=self._help_about)
-
+        #放置菜单栏
         self.config(menu=self.menubar)
-    
+        #构建标签页的frame
+        self.TabStrip = ttk.Notebook(self)
+        self.TabStrip.place(relx=0.005, rely=0.005, relwidth=0.990, relheight=0.990)
     def _help_about(self):
         messagebox.showinfo('about', 'Coder：BigV4 \n\n TKShell verion 1.0 \n\n Thank You！! !\n ')  # 弹出消息提示框
 
+    def creatSessionFrame(self):
+        print("creatSessionFrame")
+        
     def _file_new(self):
-        sessionpropertiesframe.SessionPropertiesFrame()
+        print("[]self = %s %r" %(id(self), self))
+        pw = sessionpropertiesframe.SessionPropertiesFrame(self, titlename="New Session")
+        self.wait_window(pw) # 这一句很重要！！！
+        return
+        '''
+        #message = sessionpropertiesframe.SessionPropertiesFrame(titlename="New Session")
+        TabStrip_Tab1 = tk.Frame(self.TabStrip)
+        self.TabStrip.add(TabStrip_Tab1, text="session")
+        tk.Button(TabStrip_Tab1, text="关闭(Close)").pack()
+        shellFrame = tk.Frame(TabStrip_Tab1, height=364, width=683)
+        shellFrame.pack()
+        wid = shellFrame.winfo_id()
+        os.system('xterm -into %d -geometry 683x50 -e ./cach.shell -sb &' % wid)
+        '''
 
+        
     def _about_Website(self):
         webbrowser.open("https://github.com/bigV4/tkshell")
         print(webbrowser.get())
@@ -162,7 +183,12 @@ class TKSehllApplication(tk.Tk):
         
     def _do_job(self,message="!!!"):
         print("self._do_job  "+message)
+        messagebox.showinfo('Not Completed', '此功能暂未完成，敬请期待！ \n\n This feature has not been completed！\n ')  # 弹出消息提示框
+
+    def _create_sessiontab(self,session):
         
+        print("_create_sessiontab %r" %session)
+     
 if __name__ == '__main__':
     # 实例化Application
     app = TKSehllApplication()
