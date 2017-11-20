@@ -63,7 +63,7 @@ class MyApp(tk.Tk):
   def setup_config(self):
     # 接收弹窗的数据
     res = self.ask_userinfo()
-    #print(res)
+    print("调试信息：res=%s" %res)
     if res is None: return
     # 更改参数
     self.name, self.age = res

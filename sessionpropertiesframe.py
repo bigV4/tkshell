@@ -16,10 +16,25 @@ class SessionPropertiesFrame(tk.Toplevel):
     def __init__(self, parent, master=None, titlename="!"):
         '''初始化'''
         super().__init__() # 有点相当于tk.Tk()
+        self.parent = parent
         self.titlename = titlename
-        self.sessionPATH = {}
+        self.sessionpropertiesinfo = {"Name":"New Connect"
+                                      ,"Protocol":"SSH"
+                                      ,"Host":"127.0.0.1"
+                                      ,"Port":"22"
+                                      ,"Description":""
+                                      ,"Reconnect":"0"
+                                      ,"IntervalSecond":""
+                                      ,"LimitMinute":""
+                                      ,"TCPOptions":""
+                                      ,"Method":""
+                                      ,"UserName":"root"
+                                      ,"Password":"toor"
+                                      ,"UserKey":"None"
+                                      ,"Passphrase":""}
         self.Reconnect_var = tk.IntVar()
         self.TCPOptions_var = tk.IntVar()
+        self.parent.withdraw()# 隐藏父窗口
         #print("self.TKSehllApplication_obj = %r %s" %(self.TKSehllApplication_obj, id(self.TKSehllApplication_obj)))
         #类的构造方法必须调用其父类的构造方法来进行基本的初始化。
         self.createWidgets()
@@ -81,6 +96,7 @@ class SessionPropertiesFrame(tk.Toplevel):
         self.hostentry = tk.Entry(connectframe)
         self.hostentry.focus()     # 当程序运行时,光标默认会出现在该文本框中
         self.portspinbox= tk.Spinbox(connectframe, from_=0, to=65535) #Spinbox是从标准Tkinter 控件Entry中演变而来的，可以用来从一系列的值中选择合适的值。
+        self.portspinbox.insert(10, "22")# 默认值
         self.descriptionentry = tk.Entry(connectframe)
         self.reconnectcheckbutton = tk.Checkbutton(connectframe, text='连接异常关闭时自动重新连接(Automatically reconnect when connection is abnormal)',
                                                    command=self.reconnect_echo, variable=self.Reconnect_var)
@@ -141,33 +157,32 @@ class SessionPropertiesFrame(tk.Toplevel):
         tk.Label(authenticationframe, text="Note: Public keys and Keyboard Interactive are only available in the SSH, SFTP protocols").grid(row=13, column=0, columnspan=5, sticky="nw")
 
     def NOTOK(self):
+        self.parent.deiconify()# 显示父窗口
         self.destroy() # 销毁窗口
     def OKOKOK(self):
-        Name = self.nameentry.get()
-        Protocol = self.protocolcombobox.get()
-        Host = self.hostentry.get()
-        Port = self.portspinbox.get()
-        Description = self.descriptionentry.get()
-        Reconnect = self.Reconnect_var.get()
-        IntervalSecond = self.intervalsecondspinbox.get()
-        LimitMinute = self.limitminutespinbox.get()
-        TCPOptions = self.TCPOptions_var.get()
-        Method = self.methodcombobox.get()
-        UserName = self.usernameentry.get()
-        Password = self.passwordentry.get()
-        UserKey = self.userkeycombobox.get()
-        Passphrase = self.passphreseentry.get()
-        if ""==Name or ""==Host :
-            messagebox.showinfo('Not Yet', '[名称]与[主机]不得为空！ \n\n Host and Name need to be specified!\n ')  # 弹出消息提示框
+        self.sessionpropertiesinfo["Name"]= Name = self.nameentry.get()
+        self.sessionpropertiesinfo["Protocol"]= Protocol = self.protocolcombobox.get()
+        self.sessionpropertiesinfo["Host"]= Host = self.hostentry.get()
+        if "0"==self.portspinbox.get()[:1]:
+            self.sessionpropertiesinfo["Port"]= Port = self.portspinbox.get()[1:]
         else:
-            print("Name = %r" %Name)
-            print("Protocol = %r" %Protocol)
-            print("Host = %r" %Host)
-            print("Port = %r" %Port)
-            print("[]self = %s %r" %(id(self), self))
-            self.destroy() # 销毁窗口
-            #return self.sessionPATH
-            
+            self.sessionpropertiesinfo["Port"]= Port = self.portspinbox.get()
+        self.sessionpropertiesinfo["Description"]= Description = self.descriptionentry.get()
+        self.sessionpropertiesinfo["Reconnect"]= Reconnect = self.Reconnect_var.get()
+        self.sessionpropertiesinfo["IntervalSecond"]= IntervalSecond = self.intervalsecondspinbox.get()
+        self.sessionpropertiesinfo["LimitMinute"]= LimitMinute = self.limitminutespinbox.get()
+        self.sessionpropertiesinfo["TCPOptions"]= TCPOptions = self.TCPOptions_var.get()
+        self.sessionpropertiesinfo["Method"]= Method = self.methodcombobox.get()
+        self.sessionpropertiesinfo["UserName"]= UserName = self.usernameentry.get()
+        self.sessionpropertiesinfo["Password"]= Password = self.passwordentry.get()
+        self.sessionpropertiesinfo["UserKey"]= UserKey = self.userkeycombobox.get()
+        self.sessionpropertiesinfo["Passphrase"]= Passphrase = self.passphreseentry.get()
+        print("【sessionpropertiesframe.py调试信息】：self.sessionpropertiesinfo=%s" %self.sessionpropertiesinfo)
+        if ""==Name or ""==Host or ""== UserName:
+            messagebox.showinfo('Not Yet', '[名称]与[主机]与[用户名]不得为空！ \n\n Host and Name and UserName need to be specified!\n ')  # 弹出消息提示框
+        else:
+            print("【sessionpropertiesframe.py调试信息】self = %s %r" %(id(self), self))
+            self.NOTOK()
             
     def tcpoptions_echo(self):
         print("TCPOptions = %s" %self.TCPOptions_var.get())

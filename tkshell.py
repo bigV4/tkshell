@@ -1,15 +1,26 @@
 #!/usr/bi/python
-#_*_ coding : utf-8 _*_
-#使用python3.x版本
+#_*_coding:utf-8_*_
 import os
-import webbrowser
-import tkinter as tk
-from tkinter import ttk
-from tkinter import filedialog
-from tkinter import messagebox
-import sessionpropertiesframe
+import time
+import sys
+print(sys.version)
+if sys.version > '3':
+    import webbrowser
+    import tkinter as tk
+    from tkinter import ttk
+    from tkinter import filedialog
+    from tkinter import messagebox
+else:
+    import webbrowser
+    import Tkinter as tk
+    import ttk
+    import tkFileDialog as filedialog
+    import tkMessageBox
+    PY3 = False
 
-class TKSehllApplication(tk.Tk):
+import sessionpropertiesframe
+'''通过调用xterm来实现shell终端'''
+class TKSehllApp(tk.Tk):
     '''
     TKShell 主界面程序
         界面与逻辑分离
@@ -18,13 +29,16 @@ class TKSehllApplication(tk.Tk):
         '''初始化'''
         self.name = name
         #类的构造方法必须调用其父类的构造方法来进行基本的初始化。
-        super().__init__() # 有点相当于tk.Tk()
+        if sys.version > '3':
+            super().__init__() # 有点相当于tk.Tk()
+        else:
+            tk.Tk()
         self.createWidgets()
         sessioncachlist = []
-        print("TKSehllApplication = %r %s" %(self, id(self)))
+        print("【tkshell.py调试信息】TKSehllApplication = %r %s" %(self, id(self)))
 
     def createWidgets(self):
-        self.title(self.name + 'TKShell (free for everyone)')
+        self.title(self.name + "TKShell (free for everyone)")
         self.geometry('683x400')
 
         #self.menubar创建菜单栏
@@ -155,22 +169,91 @@ class TKSehllApplication(tk.Tk):
 
     def creatSessionFrame(self):
         print("creatSessionFrame")
+    
         
+    # 设置session参数并建立session更新窗口
     def _file_new(self):
-        print("[]self = %s %r" %(id(self), self))
-        pw = sessionpropertiesframe.SessionPropertiesFrame(self, titlename="New Session")
-        self.wait_window(pw) # 这一句很重要！！！
-        return
-        '''
-        #message = sessionpropertiesframe.SessionPropertiesFrame(titlename="New Session")
+        # 点击后弹窗   
+        print("【tkshell.py调试信息】self = %s %r" %(id(self), self))
+        settingFrame = sessionpropertiesframe.SessionPropertiesFrame(self, titlename="New Session")
+        self.wait_window(settingFrame) # 这一句很重要！！！
+        # 接收弹窗的数据
+        res = settingFrame.sessionpropertiesinfo
+        print("【tkshell.py调试信息】：res=%s" %res)
+        if res is None: return
+        # 设置参数和bash脚本
+        #    1、没有填写Password
+        if "SSH"==res["Protocol"]:
+            try:
+                file_object = open('./cach.shell', mode="wt")#以文本写方式打开，只能写文件
+                file_object.write("#!/usr/bin/expect\n")
+                file_object.close()
+                file_object = open('./cach.shell', mode="a")#以追加方式打开
+                file_object.write("\nset timout 3\n")
+                file_object.write("send \"bash\\r\"\n")
+                if "Password"==res["Method"]:
+                    file_object.write("spawn ssh -p %s %s@%s -y\n" %(str(res["Port"]), res["UserName"], str(res["Host"]), ))
+                elif "Public Key"==res["Method"]:
+                    file_object.write("spawn ssh -p %s %s@%s -y\n" %(str(res["Port"]), res["UserName"], str(res["Host"]), ))
+                elif "Keyboard Interactive"==res["Method"]:
+                    file_object.write("spawn ssh -p %s %s@%s -y\n" %(str(res["Port"]), res["UserName"], str(res["Host"]), ))
+                file_object.write("expect \"*password*\"\n")
+                file_object.write("send \"%s\\r\"\n" %res["Password"])
+                file_object.write("interact\n")
+            except Exception as e:
+                print("*"*50 + "\n[-]open(\'./cach.shell\')Error0 = %s\nfile=[tkshell.py]  function=[TKSehllApp_file_new()\n" %e +"*"*50)
+            finally:
+                 file_object.close()
+                 
+        elif "TELNET"==res["Protocol"]:
+            try:
+                file_object = open('./cach.shell', mode="wt")#以文本写方式打开，只能写文件
+                file_object.write("#!/usr/bin/expect\n")
+                file_object.close()
+                file_object = open('./cach.shell', mode="a")#以追加方式打开
+                file_object.write("\nset timout 3\n")
+                file_object.write("send \"bash\\r\"\n")
+                file_object.write("spawn telnet %s@%s %s\n" %(res["UserName"], str(res["Host"]), str(res["Port"]), ))
+                file_object.write("expect \"*password*\"\n")
+                file_object.write("send \"%s\\r\"\n" %res["Password"])
+                file_object.write("interact\n")
+            except Exception as e:
+                print("*"*50 + "\n[-]open(\'./cach.shell\')Error1 = %s\nfile=[tkshell.py]  function=[TKSehllApp_file_new()\n" %e +"*"*50)
+            finally:
+                 file_object.close()
+
+        elif "SFTP"==res["Protocol"]:
+            try:
+                file_object = open('./cach.shell', mode="wt")#以文本写方式打开，只能写文件
+                file_object.write("#!/usr/bin/expect\n")
+                file_object.close()
+                file_object = open('./cach.shell', mode="a")#以追加方式打开
+                file_object.write("\nset timout 3\n")
+                file_object.write("send \"bash\\r\"\n")
+                if "Password"==res["Method"]:
+                    file_object.write("spawn sftp -P %s %s@%s -y\n" %(str(res["Port"]), res["UserName"], str(res["Host"]), ))
+                elif "Public Key"==res["Method"]:
+                    file_object.write("spawn sftp -P %s -i %s %s@%s -y\n" %(str(res["Port"]), res["UserName"], res["UserName"], str(res["Host"]), ))
+                elif "Keyboard Interactive"==res["Method"]:
+                    file_object.write("spawn sftp -P %s %s@%s -y\n" %(str(res["Port"]), res["UserName"], str(res["Host"]), ))
+                file_object.write("expect \"*password*\"\n")
+                file_object.write("send \"%s\\r\"\n" %res["Password"])
+                file_object.write("interact\n")
+            except Exception as e:
+                print("*"*50 + "\n[-]open(\'./cach.shell\')Error2 = %s\nfile=[tkshell.py]  function=[TKSehllApp_file_new()\n" %e +"*"*50)
+            finally:
+                 file_object.close()
+                 
+        # 更新界面
         TabStrip_Tab1 = tk.Frame(self.TabStrip)
-        self.TabStrip.add(TabStrip_Tab1, text="session")
+        self.TabStrip.add(TabStrip_Tab1, text=str(res["Name"]))
         tk.Button(TabStrip_Tab1, text="关闭(Close)").pack()
         shellFrame = tk.Frame(TabStrip_Tab1, height=364, width=683)
         shellFrame.pack()
         wid = shellFrame.winfo_id()
         os.system('xterm -into %d -geometry 683x50 -e ./cach.shell -sb &' % wid)
-        '''
+        
+
 
         
     def _about_Website(self):
@@ -191,7 +274,7 @@ class TKSehllApplication(tk.Tk):
      
 if __name__ == '__main__':
     # 实例化Application
-    app = TKSehllApplication()
+    app = TKSehllApp()
     
     
     # 主消息循环:

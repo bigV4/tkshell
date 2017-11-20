@@ -1,8 +1,8 @@
 #!/usr/bin/expect
 
-set timeout 3
+set timout 3
 send "bash\r"
-spawn ssh john@192.168.2.149
+spawn ssh -p 22 john@192.168.2.149 -y
 expect "*password*"
-send "123.Com\r"
+send "\r"
 interact

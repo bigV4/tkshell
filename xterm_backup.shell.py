@@ -17,5 +17,5 @@ termf = tk.Frame(root, height=384, width=683)
 
 termf.pack(fill="both", expand="yes")
 wid = termf.winfo_id()
-os.system('xterm -into %d -geometry 680x50 -e ./cach.shell -sb &' % wid)
+os.system('xterm -into %d -geometry 680x50 -e ./backup.shell -sb &' % wid)
 root.mainloop()
