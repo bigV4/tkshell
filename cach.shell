@@ -2,7 +2,7 @@
 
 set timout 3
 send "bash\r"
-spawn ssh -p 22 john@192.168.2.149 -y
+spawn ssh -p 22 root@10.10.9.250 -y
 expect "*password*"
-send "\r"
+send "toor\r"
 interact
